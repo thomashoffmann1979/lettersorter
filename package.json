@@ -1,0 +1,45 @@
+{
+  "name": "sorter-node",
+  "description": "Main program for autonom sorting machine",
+  "homepage": "https://github.com/tualo/sorter-node",
+  "main": "lib/main.js",
+  "bin": {
+    "sorter": "./bin/sorter"
+  },
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=0.8.0"
+  },
+  "keywords": [
+    "sorter"
+  ],
+  "author": [
+    {
+      "name": "Thomas Hoffmann",
+      "email": "thomas.hoffmann@tualo.de",
+      "url": "http://tualo.de/"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "Thomas Hoffmann",
+      "email": "thomas.hoffmann@tualo.de",
+      "url": "http://tualo.de/"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tualo/sorter-node.git"
+  },
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "require-all": "*",
+    "socket.io": "*",
+    "socket.io-client": "*",
+    "request": "*",
+    "commander": "*",
+    "window-size": "*",
+    "colors": "*",
+    "opencv": "*"
+  }
+}

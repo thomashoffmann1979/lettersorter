@@ -1,0 +1,88 @@
+#!/usr/bin/env node
+
+var fs = require('fs'),
+    program = require('commander'),
+    pjson = require('../package.json'),
+    path =  require('path'),
+    clss = require(path.join('..','lib','main'));
+
+var exdendedHelp = function(){
+    var examples = [];
+    examples.push( '');
+    console.log(examples.join("\n"));
+}
+
+program
+    .version(pjson.version)
+    .description('sorter')
+    .usage('[options]')
+
+    .option('--master','run the masterservice')
+    .option('--erp_url [erp_url]', 'the erp url')
+    .option('--erp_client [erp_client]', 'the erp client')
+    .option('--erp_login [erp_login]', 'the erp username')
+    .option('--erp_password [erp_password]', 'the erp password')
+    .option('--port', 'the port where the ')
+
+    .option('--client', 'run the client')
+    .option('--pin [pin]', 'the pin number for the magnet-relais')
+    .option('--ocr', 'run the ocr')
+    .option('--camera [camera]', 'the camera index used for ocr')
+    .option('--host [host]', 'the host url')
+
+
+    .on('--help', exdendedHelp)
+
+    .parse(process.argv);
+
+if (program.service){
+  var main = require(path.join(__dirname,'..','lib','main'));
+  //main.client(program.url,program.client,program.login,program.password);
+}else if (program.master){
+
+  //var main = require(path.join(__dirname,'..','lib','main'));
+
+  var master = new clss.Master();
+  if (program.erp_url){
+    master.url = program.erp_url;
+  }
+  if (program.erp_client){
+    master.client = program.erp_client;
+  }
+  if (program.erp_login){
+    master.login = program.erp_login;
+  }
+  if (program.erp_password){
+    master.password = program.erp_password;
+  }
+  if (program.port){
+    master.port = program.port;
+  }
+  master.start();
+  master.erp();
+
+}else if (program.client){
+
+  var client = new clss.Client();
+  if (program.host){
+    client.host = program.host;
+  }
+  if (program.pin){
+    client.pin = program.pin;
+  }
+  client.start();
+
+}else if (program.ocr){
+
+  var ocr = new clss.OCR();
+  if (program.host){
+    ocr.host = program.host;
+  }
+  if (program.camera){
+    ocr.camera = program.camera;
+  }
+  ocr.start();
+
+}else{
+  program.help()
+}
