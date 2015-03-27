@@ -38,8 +38,9 @@
     "socket.io-client": "*",
     "request": "*",
     "commander": "*",
-    "window-size": "*",
     "colors": "*",
-    "opencv": "*"
+    "mysql": "*",
+    "soundex": "*"
   }
+
 }

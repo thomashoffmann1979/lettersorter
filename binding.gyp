@@ -37,13 +37,13 @@
 
       "libraries": [
           "-L/usr/local/lib"
-
       ],
+
 
       "link_settings": {
         "libraries": [
             "<!@(pkg-config --libs opencv)",
-            "-llept", "-ltesseract"
+            "-llept", "-ltesseract", "-lzbar"
         ]
       }
 

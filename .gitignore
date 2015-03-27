@@ -2,3 +2,6 @@ Archiv.zip
 node_modules
 test/*.png
 build
+test/files/*.png
+*.zip
+*.DS_Store

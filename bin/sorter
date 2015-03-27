@@ -35,6 +35,7 @@ program
 
     .parse(process.argv);
 
+
 if (program.service){
   var main = require(path.join(__dirname,'..','lib','main'));
   //main.client(program.url,program.client,program.login,program.password);
@@ -70,6 +71,9 @@ if (program.service){
   if (program.pin){
     client.pin = program.pin;
   }
+
+  client.displayPinSetup();
+
   client.start();
 
 }else if (program.ocr){
