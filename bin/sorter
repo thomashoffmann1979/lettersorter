@@ -72,6 +72,29 @@ if (program.service){
     client.pin = program.pin;
   }
 
+  if (typeof process.env.boards !== 'undefined'){
+    var m = process.env.boards*1;
+    for(var i=0;i < m;i++){
+
+      var optoPin,boardPin,delay=10,tag,timeout=1000;
+
+      tag = 'K-'+(i+1);
+      log('info','prg',tag+' set up '+m);
+
+
+      if (typeof process.env['optoPin'+(i+1)]  !== 'undefined' ){
+        optoPin = process.env['optoPin'+(i+1)]*1;
+      }
+
+      if (typeof process.env['boardPin'+(i+1)]  !== 'undefined' ){
+        boardPin = process.env['boardPin'+(i+1)]*1;
+        client.setUpBAO(tag,delay,timeout,boardPin,optoPin);
+      }else{
+        log('error','prg',tag+' not defined');
+      }
+    }
+  }
+
   client.displayPinSetup();
 
   client.start();
