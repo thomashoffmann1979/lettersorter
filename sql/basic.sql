@@ -1,3 +1,5 @@
+
+
 drop table ocrhash;
 create table ocrhash (ids varchar(255) primary key,adr text );
 create fulltext index id_ft_hash on ocrhash(adr);
