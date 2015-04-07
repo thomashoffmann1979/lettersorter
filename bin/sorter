@@ -23,6 +23,10 @@ program
     .option('--erp_client [erp_client]', 'the erp client *1')
     .option('--erp_login [erp_login]', 'the erp username *1')
     .option('--erp_password [erp_password]', 'the erp password *1')
+    .option('--db_name [db_name]', 'the database name, default is sorter *1')
+    .option('--db_user [db_user]', 'the database username, default is root *1')
+    .option('--db_password [db_password]', 'the database password, default is empty *1')
+    .option('--db_host [db_host]', 'the database host, defaults to localhost *1')
     .option('--port', 'the port where the *1')
 
     .option('--client', 'run the client')
@@ -76,6 +80,18 @@ if (program.service){
   }
   if (program.port){
     master.port = program.port;
+  }
+  if (program.db_name){
+    master.dbName = program.db_name;
+  }
+  if (program.db_host){
+    master.dbHost = program.db_host;
+  }
+  if (program.db_user){
+    master.dbUser = program.db_user;
+  }
+  if (program.db_password){
+    master.dbPassword = program.db_password;
   }
   master.start();
   master.erp();
