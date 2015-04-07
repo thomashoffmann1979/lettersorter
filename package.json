@@ -1,7 +1,7 @@
 {
-  "name": "sorter-node",
-  "description": "Main program for autonom sorting machine",
-  "homepage": "https://github.com/tualo/sorter-node",
+  "name": "lettersorter",
+  "description": "Main program for autonom letter sorting machine",
+  "homepage": "https://github.com/tualo/lettersorter",
   "main": "lib/main.js",
   "bin": {
     "sorter": "./bin/sorter"
@@ -29,7 +29,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/tualo/sorter-node.git"
+    "url": "https://github.com/tualo/lettersorter.git"
   },
   "readmeFilename": "README.md",
   "dependencies": {
