@@ -6,7 +6,7 @@
   "bin": {
     "sorter": "./bin/sorter"
   },
-  "version": "0.0.5",
+  "version": "0.0.6",
   "engines": {
     "node": ">=0.12.0"
   },

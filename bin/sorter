@@ -27,13 +27,13 @@ program
     .option('--db_user [db_user]', 'the database username, default is root *1')
     .option('--db_password [db_password]', 'the database password, default is empty *1')
     .option('--db_host [db_host]', 'the database host, defaults to localhost *1')
-    .option('--global_delay [global_delay]', 'if delay is not set per board global_delay is used for calculation, defaults to 500 *1')
-    .option('--global_timeout [global_timeout]', 'if timeout is not set per board global_timeout is used for, defaults to 1000 *1')
     .option('--port', 'the port where the *1')
     .option('--codepages [codepages]', 'opens a browser with all nessesary barcodes, ready for printing')
 
     .option('--client', 'run the client')
 
+    .option('--global_delay [global_delay]', 'if delay is not set per board global_delay is used for calculation, defaults to 500 *1')
+    .option('--global_timeout [global_timeout]', 'if timeout is not set per board global_timeout is used for, defaults to 1000 *1')
     .option('--boards [boards]', 'the number of boards to be used *1');
 
 for(var i = 0;i < 10;i++){
@@ -102,8 +102,7 @@ if (program.service){
     setTimeout(function(){
       var cp = new clss.CodePages();
       cp.master = master;
-      cp.create(program.codepages);
-
+      cp.create(program.codepages.toLowerCase());
     },1000);
   }
 

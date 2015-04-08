@@ -29,6 +29,23 @@ html(lang="en")
         height: 226mm;
       }
 
+      .bcc{
+        padding: 15px;
+        border: 1px solid gray;
+        border-radius: 5px;
+      }
+
+      .bc{
+        width: 650px;
+      }
+
+      .txt{
+        width: 650px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 14pt;
+      }
+
       @page {
         size: A4;
         margin: 0;
@@ -50,5 +67,6 @@ body
     each code in codes
       div.page
         div.subpage
-          p !{code.svg}
-          p !{code.text}
+          div.bcc
+            div.bc !{code.svg}
+            div.txt !{code.text}
