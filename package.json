@@ -42,7 +42,9 @@
     "colors": "*",
     "mysql": "*",
     "soundex": "*",
-    "osenv": "*"
+    "osenv": "*",
+    "jade": "*",
+    "tualo-barcode": "*"
   }
 
 }
