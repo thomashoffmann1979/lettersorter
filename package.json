@@ -6,7 +6,7 @@
   "bin": {
     "sorter": "./bin/sorter"
   },
-  "version": "0.0.4",
+  "version": "0.0.5",
   "engines": {
     "node": ">=0.12.0"
   },
@@ -41,7 +41,8 @@
     "commander": "*",
     "colors": "*",
     "mysql": "*",
-    "soundex": "*"
+    "soundex": "*",
+    "osenv": "*"
   }
 
 }

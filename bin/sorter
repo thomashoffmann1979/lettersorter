@@ -27,6 +27,8 @@ program
     .option('--db_user [db_user]', 'the database username, default is root *1')
     .option('--db_password [db_password]', 'the database password, default is empty *1')
     .option('--db_host [db_host]', 'the database host, defaults to localhost *1')
+    .option('--global_delay [global_delay]', 'if delay is not set per board global_delay is used for calculation, defaults to 500 *1')
+    .option('--global_timeout [global_timeout]', 'if timeout is not set per board global_timeout is used for, defaults to 1000 *1')
     .option('--port', 'the port where the *1')
 
     .option('--client', 'run the client')
@@ -107,13 +109,16 @@ if (program.service){
   nBoards = program.boards;
   if (typeof nBoards !== 'undefined'){
     var m = nBoards*1;
+    var gd = program.global_delay || 500;
+    var gt = program.global_timeout || 1000;
+
     for(var i=0;i < m;i++){
 
       var optoPin=program['optoPin'+(i+1)],
           boardPin=program['boardPin'+(i+1)],
-          delay=program['delay'+(i+1)] || (i * 500),
+          delay=program['delay'+(i+1)] || (i * gd),
           tag,
-          timeout=program['timeout'+(i+1)] || 1000;
+          timeout=program['timeout'+(i+1)] || gt;
 
       tag = 'K-'+(i+1);
       log('info','prg',tag+' set up '+m);
@@ -127,7 +132,6 @@ if (program.service){
   }
 
   client.displayPinSetup();
-
   client.start();
 
 }else if (program.ocr){
