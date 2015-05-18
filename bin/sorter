@@ -27,7 +27,7 @@ program
     .option('--db_user [db_user]', 'the database username, default is root *1')
     .option('--db_password [db_password]', 'the database password, default is empty *1')
     .option('--db_host [db_host]', 'the database host, defaults to localhost *1')
-    .option('--port', 'the port where the *1')
+    .option('--port [port]', 'the port where the *1')
     .option('--codepages [codepages]', 'opens a browser with all nessesary barcodes, ready for printing')
 
     .option('--client', 'run the client')
