@@ -36,6 +36,7 @@ html(lang="en")
       }
 
       .bc{
+        padding: 10px;
         width: 650px;
       }
 
@@ -64,9 +65,10 @@ html(lang="en")
       }
 body
   div.book
-    each code in codes
+    each codes in xcodes
       div.page
         div.subpage
-          div.bcc
-            div.bc !{code.svg}
-            div.txt !{code.text}
+          each code in codes
+            div.bcc
+              div.bc !{code.svg}
+              div.txt !{code.text}
