@@ -45,6 +45,15 @@
     "osenv": "*",
     "jade": "*",
     "tualo-barcode": "*"
+  },
+
+  "devDependencies": {
+    "grunt": "*",
+    "grunt-contrib-coffee": "*",
+    "grunt-cli": "*",
+    "grunt-shell": "*",
+    "grunt-coffeelint": "*",
+    "coffee-script": "^1.9.0"
   }
 
 }

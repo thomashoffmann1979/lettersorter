@@ -5,4 +5,5 @@ build
 test/files/*.png
 *.zip
 *.DS_Store
+*.old
 setup.sh
