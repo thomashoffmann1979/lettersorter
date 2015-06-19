@@ -172,7 +172,7 @@ class Client extends EventEmitter
         list = require @lastSetupFile
         (@setFilter(item.tag,item.filter) for item in list when typeof item.tag=='string' and typeof item.filter=='string' and typeof @baos[item.tag]=='object')
       catch error
-        emit 'error', error
+        @emit 'error', error
 
   setSaveTimer: () ->
     if typeof @saveTimer!='undefined'
@@ -185,4 +185,60 @@ class Client extends EventEmitter
     fs.writeFile @lastSetupFile, (err) => @onSave(err)
   onSave: (err) ->
     if err
-      emit 'error', err
+      @emit 'error', err
+
+  padR: (str, length) ->
+    while str.length < length
+      str+=' '
+    str.substring 0, length
+
+  displayPinSetup: () ->
+    cl = []
+    notes = []
+    for i in [1..42]
+      cl[i-1] = 'black'
+      notes[i-1] = '---'
+    for tag of @baos
+      notes[ @baos[tag].boardPin - 1 ]  = tag+' B'
+      cl[ @baos[tag].boardPin - 1 ]     = 'blue'
+      notes[ @baos[tag].optoPin - 1 ]   = tag+' O'
+      cl[ @baos[tag].optoPin - 1 ]      = 'magenta'
+
+    notes[1 - 1]  = me.padR '3.3V+', 8
+    cl[1 - 1]     = 'yellow'
+    notes[2 - 1]  = me.padR '5V', 8
+    cl[2 - 1]     = 'red'
+    notes[4 - 1]  = me.padR '5V+', 8
+    cl[4 - 1]     = 'red'
+
+    notes[6 - 1]  = me.padR 'GND',8
+    cl[6 - 1]     = 'grey'
+    notes[9 - 1]  = me.padR 'GND',8
+    cl[9 - 1]     = 'grey'
+    notes[14 - 1] = me.padR 'GND',8
+    cl[14 - 1]    = 'grey'
+    notes[17 - 1] = me.padR 'GND',8
+    cl[17 - 1]    = 'grey'
+    notes[20 - 1] = me.padR 'GND',8
+    cl[20 - 1]    = 'grey'
+    notes[25 - 1] = me.padR 'GND',8
+    cl[25 - 1]    = 'grey'
+    notes[me.alivePinNumber-1]  = me.padR 'LED' ,6
+    cl[me.alivePinNumber - 1]   = 'green'
+
+
+    endL  = "\n"
+    l     = ''
+    l    += endL
+    l    += '|-------------------||-------------------|'
+    l    += endL
+    i     = 1
+    for y in [0..20]
+      for x in [0..2]
+        pn = colors[cl[i-1]]( @padR( '#'+(i)+'', 4) )
+        l +='| '+pn+' | ' + colors[cl[i-1]]( @padR(notes[i-1],10) )+' |'
+        i++
+      l += endL
+      l +='|-------------------||-------------------|'
+      l += endL
+    console.log l
