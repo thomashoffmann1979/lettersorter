@@ -34,26 +34,26 @@ module.exports =
 class PIN extends EventEmitter
   constructor: (pinNumber) ->
 
-    if typeof PIN_MAP[pinNumber]==='undefined'
-      throw 'This pin number is not supported'
-    if PIN_MAP[pinNumber]===-1
-      throw 'This pin number is not allowed'
+    if typeof PIN_MAP[pinNumber]=='undefined'
+      throw new Error 'This pin number is not supported'
+    if PIN_MAP[pinNumber]==-1
+      throw new Error 'This pin number is not allowed'
     @pin = PIN_MAP[pinNumber]
     @currentPath = path.join gpioPath,"gpio" + @pin
     @currentDirection = path.join gpioPath,"gpio" + @pin,'direction'
     @currentValue = path.join gpioPath,"gpio" + @pin,'value'
 
-  start: ()
+  start: () ->
     fs.exists gpioPath, (exists) => @onGPIOExists(exists)
-  ready: ()
+  ready: () ->
     @emit 'started', true
-  error: (error)
+  error: (error) ->
     @emit 'error', error
   onGPIOExists: (exists) ->
     if exists
       fs.exists @currentPath, (exists) => @onCurrentGPIOExists(exists)
     else
-      throw 'No access to GPIO'
+      throw new Error 'No access to GPIO'
   onCurrentGPIOExists: (exists) ->
     if exists
       @ready()
@@ -80,7 +80,7 @@ class PIN extends EventEmitter
       @emit 'set out', true
   check: () ->
     if typeof @lastState == 'undefined'
-      @lastState = false;
+      @lastState = false
     c = @get()
     if c==true
       if lastState==false

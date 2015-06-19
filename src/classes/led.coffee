@@ -6,7 +6,7 @@ pulse =
   notConnected: [ 900 ]
 
 module.exports =
-class Clapperboard extends EventEmitter
+class LED extends EventEmitter
   constructor: (pin) ->
     @pulse = pulse
     @pin = pin || 27
@@ -25,7 +25,7 @@ class Clapperboard extends EventEmitter
   onLEDSetOut: () ->
     @active = true
   run: ()->
-    frequencies = @connected ? @pulse.connected : @pulse.notconnected
+    frequencies = if @connected then @pulse.connected else @pulse.notconnected
     index = frequencies.indexOf @timeout
     index++
     if index > frequencies.length
