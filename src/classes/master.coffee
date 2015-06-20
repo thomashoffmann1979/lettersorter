@@ -39,6 +39,7 @@ class Master extends EventEmitter
     @emit 'listen', @port
     stdin = process.openStdin()
     stdin.on 'data', (data) => @onStdInput(data)
+
   #  options =
   #    url: @url
   #    client: @client
@@ -64,6 +65,7 @@ class Master extends EventEmitter
     input = data.toString().replace /\n/g,''
     if input=='refresh'
       @erp.sendings()
+
   onIncommingConnection: (socket) ->
     debug 'master connection', socket.id
     socket.on 'disconnect', (data) => @onDisconnect(socket,data)
@@ -98,21 +100,24 @@ class Master extends EventEmitter
     @ocr_clients[socket.id] = socket
 
   onPing: (socket,data) ->
+    debug 'master ping', 'from '+socket.id+JSON.stringify(data,null,0)
     if typeof @box_clients[socket.id]=='undefined'
-      (@removeFilter item.filter for item in data)
+      (@removeFilter item.filter for item in data.list)
       @box_clients[socket.id] = socket
-      (@onFilter item for item in data)
+      (@onFilter socket,item for item in data.list)
 
   onFilter: (socket,data) ->
     if typeof @box_clients[socket.id]!='undefined'
       @removeFilter data.filter
       container = data.filter
       @box_containers[container] = socket.id
+      debug 'master filter', container+' on '+socket.id
       if typeof @sendings[container] != 'undefined'
         socket.emit 'add id', id
 
   removeFilter: (container) ->
     socketid = @box_containers[container]
+    debug 'master remove filter', container+' on '+socketid
     if typeof socketid=='string'
       if typeof @box_clients[socketid]!='undefined'
         @box_clients[socketid].emit 'filter removed', container
