@@ -53,7 +53,7 @@ class PIN extends EventEmitter
     if exists
       fs.exists @currentPath, (exists) => @onCurrentGPIOExists(exists)
     else
-      throw new Error 'No access to GPIO'
+      @emit 'error', new Error 'No access to GPIO'
   onCurrentGPIOExists: (exists) ->
     if exists
       @ready()

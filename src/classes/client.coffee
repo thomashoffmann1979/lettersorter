@@ -106,15 +106,17 @@ class Client extends EventEmitter
     @connected = true
     @alive.connected = false
 
-  onFilterRemoved: (data) ->
-    tag = data.tag
-    if tag?
-      @baos[tag].filter = ''
+  onFilterRemoved: (filter) ->
+    ftag = null
+    for tag of @baos when @baos[tag].filter == filter
+      ftag = tag
+    if ftag?
+      @baos[ftag].filter = ''
       msg =
-        tag: tag
+        tag: ftag
         filter: filter
       @sendIO 'filter', msg
-      @freeWaitFor tag
+      @freeWaitFor ftag
 
   freeWaitFor: (tag) ->
     (@deleteID(id) for id in @waitfor when @waitfor[id]==tag)
