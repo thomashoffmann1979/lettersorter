@@ -1,5 +1,6 @@
 {EventEmitter} = require 'events'
 socketio = require 'socket.io'
+udpfindme = require 'udpfindme'
 
 module.exports =
 class Master extends EventEmitter
@@ -22,46 +23,60 @@ class Master extends EventEmitter
     @box_containers = {}
 
   start: () ->
+
+    discoverServer = new udpfindme.Server 31111 , '0.0.0.0'
+    discoverMessage =
+      port: @port
+      type: 'sorter'
+    discoverServer.setMessage discoverMessage
+
+
     @io = socketio()
     @io.on 'connection', (socket) => @onIncommingConnection(socket)
     @io.listen @port
+    debug 'master start','listen on '+@port
+
     @emit 'listen', @port
     stdin = process.openStdin()
     stdin.on 'data', (data) => @onStdInput(data)
-    options =
-      url: @url
-      client: @client
-      login: @login
-      password: @password
-    @erp = new ERP options
-    @erp.on 'logged in', (sid) => @onERPLogin(sid)
-    @erp.on 'error', (error) => @onERPError(error)
-    @erp.on 'sendings', (sendings) => @onERPSendings(sendings)
-    @erp.login()
-  onERPLogin: (sid) ->
-    @emit 'logged in', sid
-    @erp.sendings()
+  #  options =
+  #    url: @url
+  #    client: @client
+  #    login: @login
+  #    password: @password
 
-  onERPError: (error) ->
-    @emit 'error', error
+  #  @erp = new ERP options
+  #  @erp.on 'logged in', (sid) => @onERPLogin(sid)
+  #  @erp.on 'error', (error) => @onERPError(error)
+  #  @erp.on 'sendings', (sendings) => @onERPSendings(sendings)
+  #  @erp.login()
+  #onERPLogin: (sid) ->
+  #  @emit 'logged in', sid
+  #  @erp.sendings()
 
-  onERPSendings: (sendings) ->
-    (@addSending(item) for item in sendings)
+  #onERPError: (error) ->
+  #  @emit 'error', error
+  #
+  #onERPSendings: (sendings) ->
+  #  (@addSending(item) for item in sendings)
 
   onStdInput: (data) ->
     input = data.toString().replace /\n/g,''
     if input=='refresh'
       @erp.sendings()
   onIncommingConnection: (socket) ->
+    debug 'master connection', socket.id
     socket.on 'disconnect', (data) => @onDisconnect(socket,data)
     socket.on 'filter', (data) => @onFilter(socket,data)
+
     socket.on 'ping', (data) => @onPing(socket,data)
 
-    socket.on 'new', (data) => @onNew(socket,data)
     socket.on 'ui', (data) => @onUI(socket,data)
     socket.on 'ocrservice', (data) => @onOCR(socket,data)
+    socket.on 'new', (data) => @onNew(socket,data)
 
   onDisconnect: (socket) ->
+    debug 'master disconnect', socket.id
     if typeof @ui_clients[socket.id] == 'object'
       delete @ui_clients[socket.id]
     if typeof @ocr_clients[socket.id] == 'object'
@@ -83,7 +98,6 @@ class Master extends EventEmitter
     @ocr_clients[socket.id] = socket
 
   onPing: (socket,data) ->
-
     if typeof @box_clients[socket.id]=='undefined'
       (@removeFilter item.filter for item in data)
       @box_clients[socket.id] = socket

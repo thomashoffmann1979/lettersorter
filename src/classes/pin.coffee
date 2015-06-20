@@ -35,13 +35,14 @@ class PIN extends EventEmitter
   constructor: (pinNumber) ->
 
     if typeof PIN_MAP[pinNumber]=='undefined'
-      throw new Error 'This pin number is not supported'
+      throw new Error 'This pin number is not supported *'+pinNumber+'*'
     if PIN_MAP[pinNumber]==-1
-      throw new Error 'This pin number is not allowed'
+      throw new Error 'This pin number is not allowed *'+pinNumber+'*'
     @pin = PIN_MAP[pinNumber]
     @currentPath = path.join gpioPath,"gpio" + @pin
     @currentDirection = path.join gpioPath,"gpio" + @pin,'direction'
     @currentValue = path.join gpioPath,"gpio" + @pin,'value'
+    @canUseGPIO = false
 
   start: () ->
     fs.exists gpioPath, (exists) => @onGPIOExists(exists)
@@ -51,6 +52,7 @@ class PIN extends EventEmitter
     @emit 'error', error
   onGPIOExists: (exists) ->
     if exists
+      @canUseGPIO = true
       fs.exists @currentPath, (exists) => @onCurrentGPIOExists(exists)
     else
       @emit 'error', new Error 'No access to GPIO'
@@ -65,14 +67,16 @@ class PIN extends EventEmitter
     else
       setTimeout @ready.bind(@), 500
   out: () ->
-    fs.writeFile @currentDirection, 'out', (error) => @onOut(error)
+    if @canUseGPIO==true
+      fs.writeFile @currentDirection, 'out', (error) => @onOut(error)
   onOut: (error) ->
     if error
       @error error
     else
       @emit 'set out', true
   in: () ->
-    fs.writeFile @currentDirection, 'in', (error) => @onIn(error)
+    if @canUseGPIO==true
+      fs.writeFile @currentDirection, 'in', (error) => @onIn(error)
   onIn: (error) ->
     if error
       @error error
@@ -97,14 +101,16 @@ class PIN extends EventEmitter
       v='1'
     if v==false
       v='0'
-    fs.writeFile @currentValue, v, (error) => @onValue(error)
+    if @canUseGPIO==true
+      fs.writeFile @currentValue, v, (error) => @onValue(error)
   onValue: (error) ->
     if error
       @error error
     else
   get: () ->
-    res = fs.readFileSync(@currentValue).toString().trim()
-    if res=='0'
-      false
-    else
-      true
+    if @canUseGPIO==true
+      res = fs.readFileSync(@currentValue).toString().trim()
+      if res=='0'
+        false
+      else
+        true

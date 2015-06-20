@@ -2,9 +2,14 @@
 {Magellan} = require 'magellan-scanners'
 socket = require 'socket.io-client'
 colors = require 'colors'
+path = require 'path'
+fs = require 'fs'
 osenv = require 'osenv'
+udpfindme = require 'udpfindme'
 util = require 'util'
 PIN = require './pin'
+LED = require './led'
+BAO = require './bao'
 
 module.exports =
 class Client extends EventEmitter
@@ -13,11 +18,12 @@ class Client extends EventEmitter
     @baos = {}
     @baosIndex = 0
     @connected = false
-    @host = 'http://localost:3000/'
+    @discoverd = false
     @alivePinNumber = 26
-    @useSTDIN = false
+    @useSTDIN = true
     @lastSetupFile = path.join osenv.home(),'.sorter_last_setup.json'
     @containers = ['PLZ','SG','SGSF']
+    @waitfor = {}
 
   setUpBAO: (tag,delay,timeout,boardPin,optoPin) ->
     @baos[tag] = new BAO tag,delay,timeout,boardPin,optoPin
@@ -30,27 +36,55 @@ class Client extends EventEmitter
         index: @baosIndex
         list: list
       @sendIO 'ping', data
-  start: () ->
-    @io = socket @host
-
+  onDiscoveryFound: (data,remote)->
+    if typeof data.type == 'string'
+      if data.type == 'sorter'
+        if @discoverd==false
+          @discoverd = true
+          @url = 'http://'+remote.address+':'+data.port+'/'
+          @setIO()
+        else if @connected==false
+          @new_url = 'http://'+remote.address+':'+data.port+'/'
+          console.log @url, @new_url, @url == @new_url
+          if @new_url != @url
+            @url = @new_url
+            @setIO()
+  setIO: () ->
+    if typeof @io=='object'
+      @io.close()
+    @io = socket @url,{ transports: [ 'websocket' ] }
+    debug 'client start', 'set up io '+@url
+    @io.on 'connect_error', (err) ->
+      debug 'client io error', err
     @io.on 'connect', () => @onConnect()
     @io.on 'disconnect', () => @onDisconnect()
     @io.on 'filter removed',(data) => @onFilterRemoved(data)
     @io.on 'containers',(data) => @onContainers(data)
     @io.on 'add id', (data) => @onID(data)
 
+  onDiscoveryTimout: () ->
+    @discovery.discover()
+
+  start: () ->
+
+    @discovery = new udpfindme.Discovery 31111
+    @discovery.on 'found', (data,remote) => @onDiscoveryFound(data,remote)
+    @discovery.on 'timeout', () => @onDiscoveryTimout()
+    @discovery.discover()
+
+
     setInterval @ping.bind(@), 5000
     if @useSTDIN==false
       try
         magellan = new Magellan
         magellan.read (input) => @onMagellanInput(input)
+        debug 'client magellan', 'using magellan scanner'
       catch error
-        console.log 'missing magellan scanner, now using stdin'
+        warn 'client magellan', 'missing magellan scanner, now using stdin'
         @useSTDIN = true
 
     @alive = new LED
     @alive.pin = @alivePinNumber
-    @alive.set()
     @alive.run()
 
     (@baos[tag].setUp() for tag of @baos)
@@ -61,6 +95,7 @@ class Client extends EventEmitter
 
 
     setTimeout @lastSetup.bind(@), 1000
+    @displayPinSetup()
 
   onStdInput: (input) ->
     @onInput input.toString()
@@ -99,10 +134,12 @@ class Client extends EventEmitter
         @sendIO 'notforme', input
 
   onConnect: () ->
+    debug 'client connected', 'ok'
     @connected = true
     @alive.connected = true
     @ping()
   onDisconnect: () ->
+    debug 'client disconnected', '-'
     @connected = true
     @alive.connected = false
 
@@ -149,7 +186,7 @@ class Client extends EventEmitter
       false
 
   setFilter: (tag,filter) ->
-    @baos[tag].filter = input
+    @baos[tag].filter = filter
     msg =
       tag: tag
       filter: filter
@@ -206,27 +243,27 @@ class Client extends EventEmitter
       notes[ @baos[tag].optoPin - 1 ]   = tag+' O'
       cl[ @baos[tag].optoPin - 1 ]      = 'magenta'
 
-    notes[1 - 1]  = me.padR '3.3V+', 8
+    notes[1 - 1]  = @padR '3.3V+', 8
     cl[1 - 1]     = 'yellow'
-    notes[2 - 1]  = me.padR '5V', 8
+    notes[2 - 1]  = @padR '5V', 8
     cl[2 - 1]     = 'red'
-    notes[4 - 1]  = me.padR '5V+', 8
+    notes[4 - 1]  = @padR '5V+', 8
     cl[4 - 1]     = 'red'
 
-    notes[6 - 1]  = me.padR 'GND',8
+    notes[6 - 1]  = @padR 'GND',8
     cl[6 - 1]     = 'grey'
-    notes[9 - 1]  = me.padR 'GND',8
+    notes[9 - 1]  = @padR 'GND',8
     cl[9 - 1]     = 'grey'
-    notes[14 - 1] = me.padR 'GND',8
+    notes[14 - 1] = @padR 'GND',8
     cl[14 - 1]    = 'grey'
-    notes[17 - 1] = me.padR 'GND',8
+    notes[17 - 1] = @padR 'GND',8
     cl[17 - 1]    = 'grey'
-    notes[20 - 1] = me.padR 'GND',8
+    notes[20 - 1] = @padR 'GND',8
     cl[20 - 1]    = 'grey'
-    notes[25 - 1] = me.padR 'GND',8
+    notes[25 - 1] = @padR 'GND',8
     cl[25 - 1]    = 'grey'
-    notes[me.alivePinNumber-1]  = me.padR 'LED' ,6
-    cl[me.alivePinNumber - 1]   = 'green'
+    notes[@alivePinNumber-1]  = @padR 'LED' ,6
+    cl[@alivePinNumber - 1]   = 'green'
 
 
     endL  = "\n"
@@ -235,8 +272,8 @@ class Client extends EventEmitter
     l    += '|-------------------||-------------------|'
     l    += endL
     i     = 1
-    for y in [0..20]
-      for x in [0..2]
+    for y in [1..20]
+      for x in [1..2]
         pn = colors[cl[i-1]]( @padR( '#'+(i)+'', 4) )
         l +='| '+pn+' | ' + colors[cl[i-1]]( @padR(notes[i-1],10) )+' |'
         i++

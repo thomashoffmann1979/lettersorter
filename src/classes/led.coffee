@@ -9,12 +9,13 @@ module.exports =
 class LED extends EventEmitter
   constructor: (pin) ->
     @pulse = pulse
-    @pin = pin || 27
+    @pin = pin || 26
     @active = false
     @connected = false
     @alive = true
     @timer = null
     @openindex = 0
+    @setUp()
   setUp: () ->
     @led = new PIN @pin
     @led.on 'started', () => @onLEDStarted()
@@ -25,7 +26,7 @@ class LED extends EventEmitter
   onLEDSetOut: () ->
     @active = true
   run: ()->
-    frequencies = if @connected then @pulse.connected else @pulse.notconnected
+    frequencies = if @connected then @pulse.connected else @pulse.notConnected
     index = frequencies.indexOf @timeout
     index++
     if index > frequencies.length

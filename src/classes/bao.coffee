@@ -8,7 +8,7 @@ class BAO extends EventEmitter
     @tag = tag || 'node'
     @delay = delay || 1
     @timeout = timeout || 1000
-    @boardPin = boardPin || 2
+    @boardPin = boardPin || 3
     @optoPin = optoPin
   setUp: () ->
     me = @
@@ -33,4 +33,4 @@ class BAO extends EventEmitter
       if @delay==0
         @board.open()
       else
-        setTimeout me.board.open, @delay
+        setTimeout @board.open, @delay

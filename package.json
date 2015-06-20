@@ -33,20 +33,21 @@
   },
   "readmeFilename": "README.md",
   "dependencies": {
+    "colors": "*",
+    "commander": "*",
+    "jade": "*",
     "magellan-scanners": "*",
+    "mysql": "*",
+    "osenv": "*",
+    "request": "*",
     "require-all": "*",
     "socket.io": "*",
     "socket.io-client": "*",
-    "request": "*",
-    "commander": "*",
-    "colors": "*",
-    "mysql": "*",
     "soundex": "*",
-    "osenv": "*",
-    "jade": "*",
-    "tualo-barcode": "*"
+    "tualo-barcode": "*",
+    "tualo-commander": "*",
+    "udpfindme": "*"
   },
-
   "devDependencies": {
     "grunt": "*",
     "grunt-contrib-coffee": "*",
@@ -55,5 +56,4 @@
     "grunt-coffeelint": "*",
     "coffee-script": "^1.9.0"
   }
-
 }

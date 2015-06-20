@@ -28,23 +28,26 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-coffeelint'
 
-  #grunt.registerTask 'createcommands', ->
-  #  commandList = require('./lib/reqall')('./commands','.js')
-  #  commands = []
-  #  (commands.push(require('./lib/commands/'+path.basename(name))) for name in commandList when name!='command.js')
+  grunt.registerTask 'createcommands', ->
+    commandList = require('./lib/reqall')('./commands','.js')
+    commands = []
+    (commands.push(require('./lib/commands/'+path.basename(name))) for name in commandList when name!='command.js')
 
-  #  for command in commands
-  #    file = path.join(__dirname,'bin','ocrservice-'+command.commandName)
-  #    options =
-  #      mode: 511
-  #    data = """
-  #    #!/usr/bin/env node
-  #    require('../lib/cli').main('"""+command.commandName+"""')
-  #    """
-  #    fs.writeFileSync file, data, options
+    for command in commands
+      file = path.join(__dirname,'bin','sorter-'+command.commandName)
+      options =
+        mode: 511
+      data = """
+      #!/usr/bin/env node
+      Cli = require('tualo-commander').Cli;
+      cli = new Cli();
+      cli.main('"""+command.commandName+"""');
+
+      """
+      fs.writeFileSync file, data, options
 
 
   grunt.registerTask('lint', ['coffeelint'])
-  grunt.registerTask 'default', ['coffee','lint'] #['coffee','createcommands','lint']
+  grunt.registerTask 'default', ['coffee','createcommands','lint']
   grunt.registerTask 'clean', ->
     grunt.file.delete('lib') if grunt.file.exists('lib')
