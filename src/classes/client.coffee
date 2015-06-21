@@ -36,31 +36,33 @@ class Client extends EventEmitter
         index: @baosIndex
         list: list
       @sendIO 'ping', data
+
   onDiscoveryFound: (data,remote)->
     if typeof data.type == 'string'
       if data.type == 'sorter'
-        if @discoverd==false
-          @discoverd = true
-          @url = 'http://'+remote.address+':'+data.port+'/'
-          @setIO()
-        else if @connected==false
-          @new_url = 'http://'+remote.address+':'+data.port+'/'
-          console.log @url, @new_url, @url == @new_url
-          if @new_url != @url
-            @url = @new_url
-            @setIO()
+        @url = 'http://'+remote.address+':'+data.port+'/'
+        if @connected == false
+          @setIoConnectTimer()
+  setIoConnectTimer: ()->
+    if typeof @ioConnectTimer!='undefined'
+      clearTimeout @ioConnectTimer
+    @ioConnectTimer = setTimeout @setIO.bind(@), 1000
+
   setIO: () ->
-    if typeof @io=='object'
-      @io.close()
-    @io = socket @url,{ transports: [ 'websocket' ] }
+    setlisteners = true
+    if typeof @io == 'object'
+      setlisteners = false
+    debug 'io connect',@io?.connected
+    @io = socket @url
     debug 'client start', 'set up io '+@url
-    @io.on 'connect_error', (err) ->
-      debug 'client io error', err
-    @io.on 'connect', () => @onConnect()
-    @io.on 'disconnect', () => @onDisconnect()
-    @io.on 'filter removed',(data) => @onFilterRemoved(data)
-    @io.on 'containers',(data) => @onContainers(data)
-    @io.on 'add id', (data) => @onID(data)
+    if setlisteners == true
+      @io.on 'connect_error', (err) ->
+        debug 'client io error', err.toString()
+      @io.on 'connect', () => @onConnect()
+      @io.on 'disconnect', () => @onDisconnect()
+      @io.on 'filter removed',(data) => @onFilterRemoved(data)
+      @io.on 'containers',(data) => @onContainers(data)
+      @io.on 'add id', (data) => @onID(data)
 
   onDiscoveryTimout: () ->
     @discovery.discover()
@@ -73,7 +75,7 @@ class Client extends EventEmitter
     @discovery.discover()
 
 
-    setInterval @ping.bind(@), 5000
+    setInterval @ping.bind(@), 10000
     if @useSTDIN==false
       try
         magellan = new Magellan
@@ -137,23 +139,25 @@ class Client extends EventEmitter
     debug 'client connected', 'ok'
     @connected = true
     @alive.connected = true
-    @ping()
+    setTimeout @setAllFilter.bind(@), 2000
+
+  setAllFilter: () ->
+    list = @list()
+    (@setFilter(item.tag,item.filter) for item in list when typeof item.tag=='string' and typeof item.filter=='string' and typeof @baos[item.tag]=='object')
+    #@ping()
+
+
   onDisconnect: () ->
     debug 'client disconnected', '-'
-    @connected = true
+    @connected = false
     @alive.connected = false
 
-  onFilterRemoved: (filter) ->
-    ftag = null
-    for tag of @baos when @baos[tag].filter == filter
-      ftag = tag
-    if ftag?
-      @baos[ftag].filter = ''
-      msg =
-        tag: ftag
-        filter: filter
-      @sendIO 'filter', msg
-      @freeWaitFor ftag
+  onFilterRemoved: (data) ->
+    debug 'client on removed filter', data
+    if @baos[data.tag]?
+      if @baos[data.tag].filter == data.filter
+        @baos[data.tag].filter = ''
+        @freeWaitFor data.tag
 
   freeWaitFor: (tag) ->
     (@deleteID(id) for id in @waitfor when @waitfor[id]==tag)
@@ -166,14 +170,16 @@ class Client extends EventEmitter
   onID: (msg) ->
     if msg.tag? and msg.data?
       if util.isArray(msg.data)
-        freeWaitFor msg.tag
+        @freeWaitFor msg.tag
         list = msg.data
+        debug 'client got list', list.length
       else
         list = [msg.data]
-      (@addID(id) for id in list)
+      (@addID(tag,id) for id in list)
   sendIO: (tag,data) ->
-    if @connected==true
-      @io.emit tag, data
+    debug tag, @io.id+JSON.stringify(data, null, 0)
+    @io.emit tag, data
+
   checkIfProc: (key) ->
     if @containers.indexOf(key) > -1
       if @baosIndex==1
@@ -186,6 +192,7 @@ class Client extends EventEmitter
       false
 
   setFilter: (tag,filter) ->
+    debug 'client set filter', tag+' '+filter
     @baos[tag].filter = filter
     msg =
       tag: tag
@@ -205,23 +212,26 @@ class Client extends EventEmitter
 
   lastSetup: () ->
     fs.exists @lastSetupFile, (exists) => @onLastSetupExists(exists)
+
   onLastSetupExists: (exists) ->
     if exists
       try
         list = require @lastSetupFile
         (@setFilter(item.tag,item.filter) for item in list when typeof item.tag=='string' and typeof item.filter=='string' and typeof @baos[item.tag]=='object')
       catch error
-        @emit 'error', error
+        #@emit 'error', error
 
   setSaveTimer: () ->
     if typeof @saveTimer!='undefined'
       clearTimeout @saveTimer
     @saveTimer = setTimeout @save.bind(@), 5000
 
-  save: () ->
+  list: () ->
     list = []
     (list.push({ tag: tag,filter: @baos[tag].filter }) for tag of @baos)
-    fs.writeFile @lastSetupFile, (err) => @onSave(err)
+    list
+  save: () ->
+    fs.writeFile @lastSetupFile,JSON.stringify(@list(),null,2), (err) => @onSave(err)
   onSave: (err) ->
     if err
       @emit 'error', err

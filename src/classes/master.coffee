@@ -13,6 +13,8 @@ class Master extends EventEmitter
 
     @containers = ['PLZ','SG','SGSF']
 
+    @tags = {}
+
     @box_clients = {}
     @ui_clients = {}
     @ocr_clients = {}
@@ -100,27 +102,59 @@ class Master extends EventEmitter
     @ocr_clients[socket.id] = socket
 
   onPing: (socket,data) ->
-    debug 'master ping', 'from '+socket.id+JSON.stringify(data,null,0)
+    #debug 'ping', socket.id
+    @addBoxClient socket
+      #(@removeFilter socket.id,item.filter for item in data.list)
+
+    #(@onFilter socket,item for item in data.list)
+  addBoxClient: (socket) ->
     if typeof @box_clients[socket.id]=='undefined'
-      (@removeFilter item.filter for item in data.list)
+      debug 'add box', socket.id
       @box_clients[socket.id] = socket
-      (@onFilter socket,item for item in data.list)
 
   onFilter: (socket,data) ->
-    if typeof @box_clients[socket.id]!='undefined'
-      @removeFilter data.filter
-      container = data.filter
-      @box_containers[container] = socket.id
-      debug 'master filter', container+' on '+socket.id
-      if typeof @sendings[container] != 'undefined'
-        socket.emit 'add id', id
+    @addBoxClient socket
+    container = data.filter
+    if container.length > 0
+      debug 'on filter', JSON.stringify(data,null,0)
+      @removeFilter container, data.tag, socket.id
+      @box_containers[container] =
+        tag: data.tag
+        id: socket.id
 
-  removeFilter: (container) ->
-    socketid = @box_containers[container]
-    debug 'master remove filter', container+' on '+socketid
-    if typeof socketid=='string'
-      if typeof @box_clients[socketid]!='undefined'
-        @box_clients[socketid].emit 'filter removed', container
+
+      if typeof @sendings[container] == 'undefined'
+        @sendings[container] = []
+      msg =
+        tag: data.tag
+        data: @sendings[container]
+      socket.emit 'add id', msg
+      console.log @box_containers
+
+  removeFilter: (container,tag,id) ->
+    ( @deleteBoxContainter(cont) for cont of @box_containers when @box_containers[cont].id == id and @box_containers[cont].tag==tag and container!=cont)
+    if typeof @box_containers[container] == 'object'
+      if @box_containers[container].id == id
+        if @box_containers[container].tag == tag
+          debug 'master remove filter', 'on same tag'
+          delete @box_containers[container]
+      else
+        console.log @box_containers[container]
+        debug 'master remove filter', 'on different socket '+container
+
+      if @box_containers[container]
+        socketid = @box_containers[container].id
+        sockettag = @box_containers[container].tag
+        @deleteBoxContainter container
+        if @box_clients[socketid]?
+          msg =
+            tag: sockettag
+            filter: container
+          @box_clients[socketid].emit 'filter removed', msg
+
+  deleteBoxContainter: (container) ->
+    debug 'remove container', container
+    delete @box_containers[container]
 
   addSending: (item) ->
     (@addSendingContainer(container,item.codes) for container in item.containers when typeof @container[container]=='string')

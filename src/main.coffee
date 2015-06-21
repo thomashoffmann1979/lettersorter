@@ -5,7 +5,7 @@ global.logWarn = process.env.log_warn != "0"
 global.logError = process.env.log_error != "0"
 
 
-global.debug = (tag,msg) ->
+global.debug = (tag,msg,data) ->
   if global.logDebug == true
     console.log colors.blue('debug'),colors.gray(tag),msg
 global.info = (tag,msg) ->
