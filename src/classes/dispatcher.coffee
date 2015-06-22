@@ -116,6 +116,8 @@ class Dispatcher extends EventEmitter
 
   onOCR: (socket,data) ->
     @ocr_clients[socket.id] = socket
+    debug 'send ocr', 'start'
+    socket.emit 'start', true
   sendOCR: (event,data,socket) ->
     msg = data
     if socket?
