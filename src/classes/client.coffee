@@ -157,7 +157,7 @@ class Client extends EventEmitter
     if @baos[data.tag]?
       if @baos[data.tag].filter == data.filter
         @baos[data.tag].filter = ''
-        @freeWaitFor data.tag
+        @freeWaitFor tag
 
   freeWaitFor: (tag) ->
     (@deleteID(id) for id in @waitfor when @waitfor[id]==tag)

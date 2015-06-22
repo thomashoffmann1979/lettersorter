@@ -2,6 +2,7 @@
 socketio = require 'socket.io'
 udpfindme = require 'udpfindme'
 freeport = require 'freeport'
+variables = require '../variables'
 
 module.exports =
 class Dispatcher extends EventEmitter
@@ -11,16 +12,14 @@ class Dispatcher extends EventEmitter
     @client = ''
     @login = ''
     @password = ''
-
     @containers = ['PLZ','SG','SGSF']
-
     @tags = {}
     @box_clients = {}
     @ui_clients = {}
     @ocr_clients = {}
+    @erp_clients = {}
 
     @clientsCount = 0
-
     @sendings = {}
     @box_containers = {}
 
@@ -29,20 +28,23 @@ class Dispatcher extends EventEmitter
       @emit 'error', err
     else
       @port = port
-      discoverServer = new udpfindme.Server 31111 , '0.0.0.0'
-      discoverMessage =
-        port: @port
-        type: 'sorter'
-      discoverServer.setMessage discoverMessage
+      setTimeout @deferedStart.bind(@),1000
 
-      @io = socketio()
-      @io.on 'connection', (socket) => @onIncommingConnection(socket)
-      @io.listen @port
-      debug 'master start','listen on '+@port
+  deferedStart: () ->
+    discoverServer = new udpfindme.Server 31111 , '0.0.0.0'
+    discoverMessage =
+      port: @port
+      type: 'sorter'
+    discoverServer.setMessage discoverMessage
 
-      @emit 'listen', @port
-      stdin = process.openStdin()
-      stdin.on 'data', (data) => @onStdInput(data)
+    @io = socketio()
+    @io.on 'connection', (socket) => @onIncommingConnection(socket)
+    @io.listen @port
+    debug 'master start','listen on '+@port
+
+    @emit 'listen', @port
+    stdin = process.openStdin()
+    stdin.on 'data', (data) => @onStdInput(data)
 
   start: () ->
     freeport (err,port) => @freeport(err,port)
@@ -51,7 +53,7 @@ class Dispatcher extends EventEmitter
   onStdInput: (data) ->
     input = data.toString().replace /\n/g,''
     if input=='refresh'
-      @erp.sendings()
+      @sendERP 'sendings'
 
   onIncommingConnection: (socket) ->
     debug 'master connection', socket.id
@@ -61,6 +63,7 @@ class Dispatcher extends EventEmitter
     socket.on 'ping', (data) => @onPing(socket,data)
 
     socket.on 'ui', (data) => @onUI(socket,data)
+    socket.on 'erp', (data) => @onERP(socket,data)
     socket.on 'ocrservice', (data) => @onOCR(socket,data)
     socket.on 'new', (data) => @onNew(socket,data)
 
@@ -83,7 +86,33 @@ class Dispatcher extends EventEmitter
   onUI: (socket,data) ->
     @ui_clients[socket.id] = socket
   sendUI: (event,data) ->
-    (@ui_clients.emit(event,data) for id of @ui_clients)
+    (@ui_clients[id].emit(event,data) for id of @ui_clients when @ui_clients[id].connected==true)
+
+  onERP: (socket,data) ->
+    @erp_clients[socket.id] = socket
+    debug 'erp', socket.id
+    socket.on 'error', (msg) => @onERPError(msg)
+    socket.on 'sendings', (list) => @onSendings(list)
+    socket.on 'loginSuccess', (data) => @onLoginSuccess(socket,data)
+    socket.on 'loginError', (data) => @onLoginError(socket,data)
+    msg =
+      client: variables.ERP_CLIENT
+      login: variables.ERP_LOGIN
+      password: variables.ERP_PASSWORD
+    socket.emit 'login', msg
+
+  onERPError: (socket,data) ->
+    error 'dispatcher erp error', data
+  onLoginSuccess: (socket,data) ->
+    debug 'login', data
+    @sendERP 'sendings', {}
+  onLoginError: (socket,data) ->
+    error 'login error', data
+  onSendings: (list) ->
+    (@addSending(item) for item in list)
+  sendERP: (event,data) ->
+    (@erp_clients[id].emit(event,data) for id of @erp_clients when @erp_clients[id].connected==true)
+
 
   onOCR: (socket,data) ->
     @ocr_clients[socket.id] = socket
@@ -92,7 +121,7 @@ class Dispatcher extends EventEmitter
     if socket?
       msg.id = socket.id
     msg.timestamp = new Date
-    (@ocr_clients.emit(event,data) for id of @ocr_clients)
+    (@ocr_clients[id].emit(event,data) for id of @ocr_clients when @ocr_clients[id].connected==true)
 
   onPing: (socket,data) ->
     @addBoxClient socket
