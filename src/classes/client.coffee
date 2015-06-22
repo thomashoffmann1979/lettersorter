@@ -41,28 +41,26 @@ class Client extends EventEmitter
     if typeof data.type == 'string'
       if data.type == 'sorter'
         @url = 'http://'+remote.address+':'+data.port+'/'
-        if @connected == false
+        if not @io?.connected
           @setIoConnectTimer()
+
   setIoConnectTimer: ()->
     if typeof @ioConnectTimer!='undefined'
       clearTimeout @ioConnectTimer
     @ioConnectTimer = setTimeout @setIO.bind(@), 1000
 
   setIO: () ->
-    setlisteners = true
-    if typeof @io == 'object'
-      setlisteners = false
-    debug 'io connect',@io?.connected
-    @io = socket @url
+    opt =
+      autoConnect: false
+    @io = socket @url, opt
     debug 'client start', 'set up io '+@url
-    if setlisteners == true
-      @io.on 'connect_error', (err) ->
-        debug 'client io error', err.toString()
-      @io.on 'connect', () => @onConnect()
-      @io.on 'disconnect', () => @onDisconnect()
-      @io.on 'filter removed',(data) => @onFilterRemoved(data)
-      @io.on 'containers',(data) => @onContainers(data)
-      @io.on 'add id', (data) => @onID(data)
+    @io.on 'connect_error', (err) => @onConnectError(err)
+    @io.on 'connect', () => @onConnect()
+    @io.on 'disconnect', () => @onDisconnect()
+    @io.on 'filter removed',(data) => @onFilterRemoved(data)
+    @io.on 'containers',(data) => @onContainers(data)
+    @io.on 'add id', (data) => @onID(data)
+    @io.connect()
 
   onDiscoveryTimout: () ->
     @discovery.discover()
@@ -108,36 +106,40 @@ class Client extends EventEmitter
     @onInput input
 
   onInput: (input) ->
-    input = input.replace /\n/g, ''
-    parts = input.split '-'
-    key = parts[0]
-    if key == 'K'
-      @state = 'proc'
-      @filterFor = input
-      @sendIO 'proc', input
-      @setResetTimer()
-    else if @checkIfProc(key)
-      if @baosIndex==1
-        @filterFor = 'K-1'
-      @setFilter @filterFor, input
-    else
-      @sendIO 'code', input
-      if typeof @waitfor[input] == 'string'
-        tag = @waitfor[input]
-        if typeof @baos[tag] == 'object'
-          msg =
-            id: input
-            tag: tag
-          @io.emit 'open', msg
-          @baos[tag].open()
-        else
-          @sendIO 'error', new Error('waiting for tag, but have no board for'+tag)
+    if @io?.connected == true
+      input = input.replace /\n/g, ''
+      parts = input.split '-'
+      key = parts[0]
+      if key == 'K'
+        @state = 'proc'
+        @filterFor = input
+        @sendIO 'proc', input
+        @setResetTimer()
+      else if @checkIfProc(key)
+        if @baosIndex==1
+          @filterFor = 'K-1'
+        @setFilter @filterFor, input
       else
-        @sendIO 'notforme', input
+        @sendIO 'code', input
+        if typeof @waitfor[input] == 'string'
+          tag = @waitfor[input]
+          if typeof @baos[tag] == 'object'
+            msg =
+              id: input
+              tag: tag
+            @io.emit 'open', msg
+            @baos[tag].open()
+          else
+            @sendIO 'error', new Error('waiting for tag, but have no board for'+tag)
+        else
+          @sendIO 'notforme', input
+
+  onConnectError: (err) ->
+    debug 'connect_error'
+    @io.disconnect()
 
   onConnect: () ->
     debug 'client connected', 'ok'
-    @connected = true
     @alive.connected = true
     setTimeout @setAllFilter.bind(@), 2000
 
@@ -149,7 +151,6 @@ class Client extends EventEmitter
 
   onDisconnect: () ->
     debug 'client disconnected', '-'
-    @connected = false
     @alive.connected = false
 
   onFilterRemoved: (data) ->
