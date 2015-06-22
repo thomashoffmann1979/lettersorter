@@ -1,9 +1,10 @@
 {EventEmitter} = require 'events'
 socketio = require 'socket.io'
 udpfindme = require 'udpfindme'
+freeport = require 'freeport'
 
 module.exports =
-class Master extends EventEmitter
+class Dispatcher extends EventEmitter
   constructor: () ->
     @url = ''
     @port = 3000
@@ -14,7 +15,6 @@ class Master extends EventEmitter
     @containers = ['PLZ','SG','SGSF']
 
     @tags = {}
-
     @box_clients = {}
     @ui_clients = {}
     @ocr_clients = {}
@@ -24,44 +24,29 @@ class Master extends EventEmitter
     @sendings = {}
     @box_containers = {}
 
+  freeport: (err,port) ->
+    if err
+      @emit 'error', err
+    else
+      @port = port
+      discoverServer = new udpfindme.Server 31111 , '0.0.0.0'
+      discoverMessage =
+        port: @port
+        type: 'sorter'
+      discoverServer.setMessage discoverMessage
+
+      @io = socketio()
+      @io.on 'connection', (socket) => @onIncommingConnection(socket)
+      @io.listen @port
+      debug 'master start','listen on '+@port
+
+      @emit 'listen', @port
+      stdin = process.openStdin()
+      stdin.on 'data', (data) => @onStdInput(data)
+
   start: () ->
+    freeport (err,port) => @freeport(err,port)
 
-    discoverServer = new udpfindme.Server 31111 , '0.0.0.0'
-    discoverMessage =
-      port: @port
-      type: 'sorter'
-    discoverServer.setMessage discoverMessage
-
-
-    @io = socketio()
-    @io.on 'connection', (socket) => @onIncommingConnection(socket)
-    @io.listen @port
-    debug 'master start','listen on '+@port
-
-    @emit 'listen', @port
-    stdin = process.openStdin()
-    stdin.on 'data', (data) => @onStdInput(data)
-
-  #  options =
-  #    url: @url
-  #    client: @client
-  #    login: @login
-  #    password: @password
-
-  #  @erp = new ERP options
-  #  @erp.on 'logged in', (sid) => @onERPLogin(sid)
-  #  @erp.on 'error', (error) => @onERPError(error)
-  #  @erp.on 'sendings', (sendings) => @onERPSendings(sendings)
-  #  @erp.login()
-  #onERPLogin: (sid) ->
-  #  @emit 'logged in', sid
-  #  @erp.sendings()
-
-  #onERPError: (error) ->
-  #  @emit 'error', error
-  #
-  #onERPSendings: (sendings) ->
-  #  (@addSending(item) for item in sendings)
 
   onStdInput: (data) ->
     input = data.toString().replace /\n/g,''
@@ -97,16 +82,22 @@ class Master extends EventEmitter
 
   onUI: (socket,data) ->
     @ui_clients[socket.id] = socket
+  sendUI: (event,data) ->
+    (@ui_clients.emit(event,data) for id of @ui_clients)
 
   onOCR: (socket,data) ->
     @ocr_clients[socket.id] = socket
+  sendOCR: (event,data,socket) ->
+    msg = data
+    if socket?
+      msg.id = socket.id
+    msg.timestamp = new Date
+    (@ocr_clients.emit(event,data) for id of @ocr_clients)
 
   onPing: (socket,data) ->
-    #debug 'ping', socket.id
     @addBoxClient socket
-      #(@removeFilter socket.id,item.filter for item in data.list)
+    @sendUI 'ping', data, socket
 
-    #(@onFilter socket,item for item in data.list)
   addBoxClient: (socket) ->
     if typeof @box_clients[socket.id]=='undefined'
       debug 'add box', socket.id
@@ -123,34 +114,38 @@ class Master extends EventEmitter
         id: socket.id
 
 
+      @sendUI 'filter', data, socket
+
       if typeof @sendings[container] == 'undefined'
         @sendings[container] = []
       msg =
         tag: data.tag
         data: @sendings[container]
       socket.emit 'add id', msg
-      console.log @box_containers
 
   removeFilter: (container,tag,id) ->
+    # removing same tag, same socket and different container
     ( @deleteBoxContainter(cont) for cont of @box_containers when @box_containers[cont].id == id and @box_containers[cont].tag==tag and container!=cont)
     if typeof @box_containers[container] == 'object'
       if @box_containers[container].id == id
         if @box_containers[container].tag == tag
           debug 'master remove filter', 'on same tag'
-          delete @box_containers[container]
+          @deleteBoxContainter container
       else
-        console.log @box_containers[container]
         debug 'master remove filter', 'on different socket '+container
 
-      if @box_containers[container]
-        socketid = @box_containers[container].id
-        sockettag = @box_containers[container].tag
+      if typeof @box_containers[container] == 'object'
+        socket_id = @box_containers[container].id
+        socket_tag = @box_containers[container].tag
         @deleteBoxContainter container
-        if @box_clients[socketid]?
+        if @box_clients[socket_id]?
           msg =
-            tag: sockettag
+            tag: socket_tag
             filter: container
-          @box_clients[socketid].emit 'filter removed', msg
+          @box_clients[socket_id].emit 'filter removed', msg
+          data = msg
+          data.id = socket_id
+          @sendUI 'filter removed', data
 
   deleteBoxContainter: (container) ->
     debug 'remove container', container

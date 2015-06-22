@@ -30,10 +30,12 @@ class Clapperboard extends EventEmitter
       @openindex--
       if @openindex == 0
         @board.set false
+        debug 'clapperboard','close'
         @emit 'close', true
   open: () ->
     if @active==true
       @openindex++
       @board.set true
+      debug 'clapperboard','open'
       @emit 'open', true
       @setTimeout()

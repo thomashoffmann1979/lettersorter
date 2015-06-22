@@ -21,9 +21,9 @@ global.error = (tag,msg) ->
 
 classNames = [
 
-  'Master',
+  'Dispatcher',
   'Client',
-  'ERP',
+  #'ERP',
 
   'PIN',
   'LED',
