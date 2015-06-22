@@ -20,7 +20,7 @@ class Client extends EventEmitter
     @connected = false
     @discoverd = false
     @alivePinNumber = 26
-    @useSTDIN = true
+    @useSTDIN = false
     @lastSetupFile = path.join osenv.home(),'.sorter_last_setup.json'
     @containers = ['PLZ','SG','SGSF']
     @waitfor = {}
@@ -199,6 +199,7 @@ class Client extends EventEmitter
       tag: tag
       filter: filter
     @sendIO 'filter', msg
+    debug 'client baos open', tag
     @baos[tag].open()
     @setSaveTimer()
 

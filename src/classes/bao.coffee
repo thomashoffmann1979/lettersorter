@@ -33,4 +33,4 @@ class BAO extends EventEmitter
       if @delay==0
         @board.open()
       else
-        setTimeout @board.open, @delay
+        setTimeout @board.open.bind(@board), @delay

@@ -13,7 +13,7 @@ class Clapperboard extends EventEmitter
     @board = new PIN @pin
     @board.on 'started', () => @onBoardStarted()
     @board.on 'set out', () => @onBoardSetOut()
-    @board.start
+    @board.start()
   onBoardStarted: () ->
     @board.out()
   onBoardSetOut: () ->
