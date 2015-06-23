@@ -77,12 +77,17 @@ class Dispatcher extends EventEmitter
       delete @box_clients[socket.id]
 
   onNew: (socket,data) ->
+    debug 'on new', JSON.stringify(data, null, 10)
     if typeof data.codes != 'undefined'
       if data.codes.length > 0
         if typeof data.containers != 'undefined'
-          if data.containers.length > 0
-            @addSending data
-
+          @addSending data
+        else
+          info 'on new', 'got data without containers'
+      else
+        info 'on new', 'got data with no code'
+    else
+      info 'on new', 'got data without codes'
   onUI: (socket,data) ->
     @ui_clients[socket.id] = socket
   sendUI: (event,data) ->
@@ -109,6 +114,7 @@ class Dispatcher extends EventEmitter
   onLoginError: (socket,data) ->
     error 'login error', data
   onSendings: (list) ->
+    debug 'on sendings', JSON.stringify(list,null,0).substring(0,50)
     (@addSending(item) for item in list)
   sendERP: (event,data) ->
     (@erp_clients[id].emit(event,data) for id of @erp_clients when @erp_clients[id].connected==true)
@@ -183,13 +189,18 @@ class Dispatcher extends EventEmitter
     delete @box_containers[container]
 
   addSending: (item) ->
-    (@addSendingContainer(container,item.codes) for container in item.containers when typeof @container[container]=='string')
+    (@addSendingContainer(item.containers[container],item.codes) for container of item.containers )
 
   addSendingContainer: (container,codes) ->
     code = codes[0]
     if typeof @sendings[container] == 'undefined'
       @sendings[container]=[]
-    @sendings[container].push code
+    if @sendings[container].indexOf(code) < 0
+      debug 'add sending container', container+' #'+code
+      @sendings[container].push code
+    else
+      debug 'add sending container', 'allready there'
+
     if typeof @box_containers[container] == 'string'
       if typeof @box_clients[@box_containers[container]] == 'object'
         @box_clients[@box_containers[container]].emit 'add id', id
