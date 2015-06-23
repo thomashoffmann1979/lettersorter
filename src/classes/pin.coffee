@@ -65,7 +65,7 @@ class PIN extends EventEmitter
     if error
       @error error
     else
-      setTimeout @ready.bind(@), 500
+      setTimeout @ready.bind(@), 1500
   out: () ->
     if @canUseGPIO==true
       fs.writeFile @currentDirection, 'out', (error) => @onOut(error)

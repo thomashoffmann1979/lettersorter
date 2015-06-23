@@ -176,10 +176,18 @@ class Client extends EventEmitter
         debug 'client got list', list.length
       else
         list = [msg.data]
-      (@addID(tag,id) for id in list)
+      (@addID(msg.tag,id) for id in list)
+    true
   sendIO: (tag,data) ->
-    debug tag, @io.id+JSON.stringify(data, null, 0)
-    @io.emit tag, data
+    if @io?
+      debug tag, @io.id+JSON.stringify(data, null, 0)
+      @io.emit tag, data
+    else
+      debug 'sendio','defered'
+      me = @
+      fn = (tag,data) ->
+        me.sendIO(tag,data)
+      setTimeout fn, 2000
 
   checkIfProc: (key) ->
     if @containers.indexOf(key) > -1
@@ -219,8 +227,10 @@ class Client extends EventEmitter
     if exists
       try
         list = require @lastSetupFile
-        (@setFilter(item.tag,item.filter) for item in list when typeof item.tag=='string' and typeof item.filter=='string' and typeof @baos[item.tag]=='object')
+        for item in list when typeof item.tag=='string' and typeof item.filter=='string' and typeof @baos[item.tag]=='object'
+          @setFilter(item.tag,item.filter)
       catch error
+        console.log error
         #@emit 'error', error
 
   setSaveTimer: () ->

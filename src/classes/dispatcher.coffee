@@ -158,6 +158,7 @@ class Dispatcher extends EventEmitter
       msg =
         tag: data.tag
         data: @sendings[container]
+      debug 'adding', container + ' #'+data.tag+' *'+@sendings[container].length
       socket.emit 'add id', msg
 
   removeFilter: (container,tag,id) ->
@@ -189,7 +190,7 @@ class Dispatcher extends EventEmitter
     delete @box_containers[container]
 
   addSending: (item) ->
-    (@addSendingContainer(item.containers[container],item.codes) for container of item.containers )
+    (@addSendingContainer(container+'-'+item.containers[container],item.codes) for container of item.containers )
 
   addSendingContainer: (container,codes) ->
     code = codes[0]
