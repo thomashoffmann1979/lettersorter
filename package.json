@@ -6,7 +6,8 @@
   "bin": {
     "sorter": "./bin/sorter"
   },
-  "version": "0.0.19",
+  "license": "GPL-3.0",
+  "version": "0.0.20",
   "engines": {
     "node": ">=0.12.0"
   },

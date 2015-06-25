@@ -27,7 +27,7 @@ forever start \
 -e /home/pi/log/stderr.log \
 --append \
 --sourceDir /usr/local/lib/node_modules/lettersorter \
-sorter client \
+bin/sorter-client \
 --boards 4 \
 --boardPin1 5 \
 --optoPin1 7 \
