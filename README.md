@@ -20,11 +20,13 @@ For automatic start on boot, change `/etc/inittab`
 
 Add the start command at the end of `/home/pi/.bashrc`.
 ```
-forerver start \
+forever start \
 -m 1 \
--l /home/pi/log/foerever.log \
+-l /home/pi/log/forever.log \
 -o /home/pi/log/stdout.log \
 -e /home/pi/log/stderr.log \
+--append \
+--sourceDir /usr/local/lib/node_modules/lettersorter \
 sorter client \
 --boards 4 \
 --boardPin1 5 \
