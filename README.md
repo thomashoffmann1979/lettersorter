@@ -8,6 +8,7 @@ Every sorter client searches for a dispatcher on the same network. If found it c
 ```
 sudo npm install -g forerver
 sudo npm install -g lettersorter
+mkdir /home/pi/log
 ```
 
 For automatic start on boot, change `/etc/inittab`
