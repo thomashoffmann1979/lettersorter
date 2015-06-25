@@ -37,11 +37,13 @@ sorter client \
 ```
 
 ## PIN Overview
+You can use pins marked with `---`. Opto-PINs are optional. If you don't use them the board will be closed after the board timeout. You can set the board timeout global with the option `--global_timeout` (default is 1000ms), or you set it per board with `--timeoutN`.
+ 
 ```
 |-------------------||-------------------|
 | #1   | 3.3V+      || #2   | 5V         |
 |-------------------||-------------------|
-| #3   | K-1 B      || #4   | 5V+        |
+| #3   | ---        || #4   | 5V+        |
 |-------------------||-------------------|
 | #5   | ---        || #6   | GND        |
 |-------------------||-------------------|

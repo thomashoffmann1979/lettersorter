@@ -10,7 +10,7 @@ params = [
   {parameter: "-t, --global_timeout [global_timeout]", description: "global timeout for close a box, defaults to 1000ms"},
 ]
 
-for i in [1..4]
+for i in [1..12]
   params.push {parameter: "-p"+i+", --boardPin"+i+" [boardPin"+i+"]", description: "pin number of boards #"+i+""}
   params.push {parameter: "-o"+i+", --optoPin"+i+" [optoPin"+i+"]", description: "pin number of optical switch #"+i+""}
   params.push {parameter: "-d"+i+", --delay"+i+" [delay"+i+"]", description: "delay for opening the board #"+i+""}
@@ -34,6 +34,8 @@ class ClientCMD extends Command
     gt = parseInt( options.global_timeout || 1000 )
     if options.boards
       boards = parseInt options.boards
+      if boards > 12
+        boards=12
       for i in [1..boards]
         optoPin = options['optoPin'+(i)]
         boardPin= options['boardPin'+(i)]
