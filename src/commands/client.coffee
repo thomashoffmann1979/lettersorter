@@ -4,6 +4,7 @@ fs = require 'fs'
 {Client} = require '../main'
 
 params = [
+  {parameter: "-n, --nodiscover", description: "do not check if there is allread on service running"},
   {parameter: "-b, --boards [boards]", description: "the number of boards to be used"},
   {parameter: "-d, --global_delay [global_delay]", description: "global delay for open a box, defaults to 500ms"},
   {parameter: "-t, --global_timeout [global_timeout]", description: "global timeout for close a box, defaults to 1000ms"},
@@ -28,7 +29,7 @@ class ClientCMD extends Command
     """
 
   action: (options,args) ->
-    @client = new Client
+    @client = new Client (typeof options.nodiscover=='undefiend')
     gd = parseInt( options.global_delay || 500 )
     gt = parseInt( options.global_timeout || 1000 )
     if options.boards

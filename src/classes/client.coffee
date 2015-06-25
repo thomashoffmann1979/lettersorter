@@ -4,6 +4,7 @@ socket = require 'socket.io-client'
 colors = require 'colors'
 path = require 'path'
 fs = require 'fs'
+os = require 'os'
 osenv = require 'osenv'
 udpfindme = require 'udpfindme'
 util = require 'util'
@@ -13,7 +14,10 @@ BAO = require './bao'
 
 module.exports =
 class Client extends EventEmitter
-  constructor: () ->
+  constructor: (startdiscoverserver) ->
+    if typeof startdiscoverserver=='undefined'
+      startdiscoverserver = false
+
     @state = 'none'
     @baos = {}
     @baosIndex = 0
@@ -24,6 +28,22 @@ class Client extends EventEmitter
     @lastSetupFile = path.join osenv.home(),'.sorter_last_setup.json'
     @containers = ['PLZ','SG','SGSF']
     @waitfor = {}
+
+
+    if startdiscoverserver==true
+      discoverServer = new udpfindme.Server 31111 , '0.0.0.0'
+      discoverMessage =
+        port: @port
+        type: 'sorter-client'
+      discoverServer.setMessage discoverMessage
+
+
+    @interfaces = []
+    @nInterfaces = os.networkInterfaces()
+    (@setIFace(@nInterfaces[name]) for name of @nInterfaces)
+
+  setIFace: (entries) ->
+    (@interfaces.push(item.address) for item in entries when item.family=='IPv4')
 
   setUpBAO: (tag,delay,timeout,boardPin,optoPin) ->
     @baos[tag] = new BAO tag,delay,timeout,boardPin,optoPin
@@ -43,6 +63,9 @@ class Client extends EventEmitter
         @url = 'http://'+remote.address+':'+data.port+'/'
         if not @io?.connected
           @setIoConnectTimer()
+      if data.type == 'sorter-client'
+        if @interfaces.indexOf(remote.address) >= 0
+          error 'client', 'there is on service running'
 
   setIoConnectTimer: ()->
     if typeof @ioConnectTimer!='undefined'
