@@ -1,7 +1,7 @@
 # sorter
 
 This program is the sorter client and sorter dispatcher for letter sorter machines. The dispatcher receives sorting informations from an erp or an ocr service.
-
+Every sorter client searches for a dispatcher on the same network. If found it connects to them. If the dispatcher receives and container id for the client, the client will informed about that id. The client open the specific board if the id will be read by the connected barcode scanner.
 
 ## Install Client on PI
 
@@ -38,7 +38,7 @@ sorter client \
 
 ## PIN Overview
 You can use pins marked with `---`. Opto-PINs are optional. If you don't use them the board will be closed after the board timeout. You can set the board timeout global with the option `--global_timeout` (default is 1000ms), or you set it per board with `--timeoutN`.
- 
+
 ```
 |-------------------||-------------------|
 | #1   | 3.3V+      || #2   | 5V         |
