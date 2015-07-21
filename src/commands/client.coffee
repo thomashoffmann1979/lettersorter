@@ -5,7 +5,6 @@ fs = require 'fs'
 
 params = [
   {parameter: "-m, --magellan", description: "use usb-com scanner"},
-  {parameter: "-i, --input", description: "input device"},
   {parameter: "-n, --nodiscover", description: "do not check if there is allread on service running"},
   {parameter: "-b, --boards [boards]", description: "the number of boards to be used"},
   {parameter: "-d, --global_delay [global_delay]", description: "global delay for open a box, defaults to 500ms"},
@@ -37,9 +36,8 @@ class ClientCMD extends Command
     if options.magellan
       debug 'options.magellan', '*'
       @client.useSTDIN=false
-    if options.input
-      @client.inputDevice = options.input
-      
+
+
     if options.boards
       boards = parseInt options.boards
       if boards > 12

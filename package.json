@@ -7,7 +7,7 @@
     "sorter": "./bin/sorter"
   },
   "license": "GPL-3.0",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "engines": {
     "node": ">=0.12.0"
   },
@@ -38,7 +38,7 @@
     "commander": "*",
     "freeport": "^1.0.5",
     "jade": "*",
-    "magellan-scanners": "*",
+    "magellan-scanners": "0.0.4",
     "mysql": "*",
     "osenv": "*",
     "request": "*",
