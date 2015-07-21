@@ -29,6 +29,8 @@ class Client extends EventEmitter
     @containers = ['PLZ','SG','SGSF']
     @waitfor = {}
 
+    @inputDevice = ""
+
 
     if startdiscoverserver==true
       discoverServer = new udpfindme.Server 31111 , '0.0.0.0'
@@ -95,6 +97,14 @@ class Client extends EventEmitter
     @discovery.on 'timeout', () => @onDiscoveryTimout()
     @discovery.discover()
 
+    if @inputDevice!=''
+      readStreamOptions =
+        flags: 'r'
+        encoding: null
+      readStream = fs.createReadStream @inputDevice, readStreamOptions
+      readStream.on 'readable', () ->
+        buf = readStream.read(16)
+        console.log buf
 
     setInterval @ping.bind(@), 10000
     if @useSTDIN==false
