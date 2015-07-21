@@ -24,7 +24,7 @@ class Client extends EventEmitter
     @connected = false
     @discoverd = false
     @alivePinNumber = 26
-    @useSTDIN = false
+    @useSTDIN = true
     @lastSetupFile = path.join osenv.home(),'.sorter_last_setup.json'
     @containers = ['PLZ','SG','SGSF']
     @waitfor = {}
@@ -121,6 +121,7 @@ class Client extends EventEmitter
     @displayPinSetup()
 
   onStdInput: (input) ->
+    debug 'stdin', input.toString()
     @onInput input.toString()
 
   onMagellanInput: (input) ->
