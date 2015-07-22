@@ -1,4 +1,5 @@
 colors = require "colors"
+fs = require "fs"
 global.logDebug = process.env.log_debug != "0"
 global.logInfo = process.env.log_info != "0"
 global.logWarn = process.env.log_warn != "0"
