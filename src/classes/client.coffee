@@ -148,11 +148,18 @@ class Client extends EventEmitter
         @setFilter @filterFor, input
       else
         @sendIO 'code', input
+        checkCode = ""
+
         if typeof @waitfor[input] == 'string'
-          tag = @waitfor[input]
+          checkCode = input
+        else if typeof @waitfor[input.substring(0,input.length-2)] == 'string'
+          checkCode = input.substring(0,input.length-2)
+
+        if typeof @waitfor[checkCode] == 'string'
+          tag = @waitfor[checkCode]
           if typeof @baos[tag] == 'object'
             msg =
-              id: input
+              id: checkCode
               tag: tag
             @io.emit 'open', msg
             @baos[tag].open()
@@ -162,7 +169,7 @@ class Client extends EventEmitter
           @sendIO 'notforme', input
     else
       error 'onInput','not connected'
-      
+
   onConnectError: (err) ->
     debug 'connect_error'
     @io.disconnect()
