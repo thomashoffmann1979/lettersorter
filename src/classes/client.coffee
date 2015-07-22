@@ -132,6 +132,7 @@ class Client extends EventEmitter
     @onInput input
 
   onInput: (input) ->
+
     if @io?.connected == true
       input = input.replace /\n/g, ''
       parts = input.split '-'
@@ -159,7 +160,9 @@ class Client extends EventEmitter
             @sendIO 'error', new Error('waiting for tag, but have no board for'+tag)
         else
           @sendIO 'notforme', input
-
+    else
+      error 'onInput','not connected'
+      
   onConnectError: (err) ->
     debug 'connect_error'
     @io.disconnect()
