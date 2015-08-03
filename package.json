@@ -7,7 +7,7 @@
     "sorter": "./bin/sorter"
   },
   "license": "GPL-3.0",
-  "version": "0.0.27",
+  "version": "0.0.28",
   "engines": {
     "node": ">=0.12.0"
   },
