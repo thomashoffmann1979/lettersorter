@@ -23,7 +23,11 @@ class BAO extends EventEmitter
       me.opto.on 'started', () ->
         me.opto.in true
       me.opto.on 'HiLo', () ->
+        debug 'BAO','Hilo', 'emitted'
         me.board.close()
+      me.opto.on 'LoHi', () ->
+        debug 'BAO','LoHi', 'emitted, do nothing'
+        #me.board.close()
       me.opto.start()
   close: () ->
     if typeof @board == 'object'
