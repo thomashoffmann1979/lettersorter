@@ -124,6 +124,7 @@ class Client extends EventEmitter
 
   onStdInput: (input) ->
     debug 'stdin', input.toString()
+    @onInput input.toString().substring(0,input.toString().length-2)
     @onInput input.toString()
 
   onMagellanInput: (input) ->
