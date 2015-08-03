@@ -81,20 +81,20 @@ class PIN extends EventEmitter
     if error
       @error error
     else
-      setTimeout @check, 5
+      setTimeout @check.bind(@), 1500
       @emit 'set in', true
   check: () ->
     if typeof @lastState == 'undefined'
       @lastState = false
     c = @get()
-    setTimeout @check, 5
+    setTimeout @check.bind(@), 5
     if c==true
-      if lastState==false
+      if @lastState==false
         @lastState = true
         @emit 'LoHi', true
         true
     else
-      if lastState==true
+      if @lastState==true
         @emit 'HiLo', true
       @lastState = false
     false
