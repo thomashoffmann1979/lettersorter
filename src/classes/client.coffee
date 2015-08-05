@@ -47,8 +47,8 @@ class Client extends EventEmitter
   setIFace: (entries) ->
     (@interfaces.push(item.address) for item in entries when item.family=='IPv4')
 
-  setUpBAO: (tag,delay,timeout,boardPin,optoPin) ->
-    @baos[tag] = new BAO tag,delay,timeout,boardPin,optoPin
+  setUpBAO: (tag,delay,timeout,boardPin,optoPin,closeOnHiLO) ->
+    @baos[tag] = new BAO tag,delay,timeout,boardPin,optoPin,closeOnHiLO
     @baosIndex++
   ping: () ->
     list = []

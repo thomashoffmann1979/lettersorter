@@ -5,6 +5,7 @@ fs = require 'fs'
 
 params = [
   {parameter: "-m, --magellan", description: "use usb-com scanner"},
+  {parameter: "-l, --lohi", description: "close clapperboard on lohi event, default hilo"},
   {parameter: "-n, --nodiscover", description: "do not check if there is allread on service running"},
   {parameter: "-b, --boards [boards]", description: "the number of boards to be used"},
   {parameter: "-d, --global_delay [global_delay]", description: "global delay for open a box, defaults to 500ms"},
@@ -42,13 +43,17 @@ class ClientCMD extends Command
       boards = parseInt options.boards
       if boards > 12
         boards=12
+      closeOnHiLO = true
+      if options.lohi
+        closeOnHiLO = false
+
       for i in [1..boards]
         optoPin = options['optoPin'+(i)]
         boardPin= options['boardPin'+(i)]
         delay   = options['delay'+(i)] || (i * gd)
         tag     = 'K-'+i
         timeout = options['timeout'+(i)] || gt
-        @client.setUpBAO tag,delay,timeout,boardPin,optoPin
+        @client.setUpBAO tag,delay,timeout,boardPin,optoPin,closeOnHiLO
       @client.start()
 
     else

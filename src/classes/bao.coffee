@@ -4,12 +4,15 @@ Clapperboard = require './clapperboard'
 
 module.exports =
 class BAO extends EventEmitter
-  constructor: (tag,delay,timeout,boardPin,optoPin) ->
+  constructor: (tag,delay,timeout,boardPin,optoPin,closeOnHiLO) ->
+    if typeof closeOnHiLO=='undefined'
+      closeOnHiLO=true
     @tag = tag || 'node'
     @delay = delay || 1
     @timeout = timeout || 1000
     @boardPin = boardPin || 3
     @optoPin = optoPin
+    @closeOnHiLO = closeOnHiLO
   setUp: () ->
     me = @
     me.board = new Clapperboard me.boardPin, me.timeout
@@ -23,11 +26,13 @@ class BAO extends EventEmitter
       me.opto.on 'started', () ->
         me.opto.in true
       me.opto.on 'HiLo', () ->
-        debug 'BAO','Hilo', 'emitted'
-        me.board.close()
+        if me.closeOnHiLO==true
+          debug 'BAO','Hilo', 'emitted'
+          me.board.close()
       me.opto.on 'LoHi', () ->
-        debug 'BAO','LoHi', 'emitted, do nothing'
-        #me.board.close()
+        if me.closeOnHiLO==false
+          debug 'BAO','LoHi', 'emitted'
+          me.board.close()
       me.opto.start()
   close: () ->
     if typeof @board == 'object'
