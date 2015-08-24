@@ -7,7 +7,7 @@
     "sorter": "./bin/sorter"
   },
   "license": "GPL-3.0",
-  "version": "0.0.30",
+  "version": "0.1.1",
   "engines": {
     "node": ">=0.12.0"
   },
@@ -48,6 +48,7 @@
     "soundex": "*",
     "tualo-barcode": "*",
     "tualo-commander": "*",
+    "node-pifacedigital": "0",
     "udpfindme": "*"
   },
   "devDependencies": {

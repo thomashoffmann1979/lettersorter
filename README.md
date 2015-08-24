@@ -6,6 +6,16 @@ Every sorter client searches for a dispatcher on the same network. If found it c
 ## Install Client on PI
 
 ```
+git clone https://github.com/piface/libmcp23s17.git
+cd libmcp23s17/
+make
+sudo make install
+
+git clone https://github.com/piface/libpifacedigital.git
+cd libpifacedigital/
+make
+sudo make install
+
 sudo npm install -g forerver
 sudo npm install -g lettersorter
 mkdir /home/pi/log
@@ -37,6 +47,12 @@ bin/sorter-client \
 --optoPin3 10 \
 --boardPin4 16 \
 --optoPin4 18
+```
+
+or start with pifacedigital board
+
+```
+sorter-client --pifacedigital --board 0 --opto 0 --motor 1 -l
 ```
 
 ## PIN Overview

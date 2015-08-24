@@ -4,7 +4,14 @@ fs = require 'fs'
 {Client} = require '../main'
 
 params = [
+
   {parameter: "-m, --magellan", description: "use usb-com scanner"},
+  {parameter: "--pifacedigital", description: "use pifacedigital"},
+
+  {parameter: "--board [board]", description: "board pin number (only pifacedigital)"},
+  {parameter: "--opto [opto]", description: "opto pin number (only pifacedigital)"},
+  {parameter: "--motor [motor]", description: "motor pin number (only pifacedigital)"},
+
   {parameter: "-l, --lohi", description: "close clapperboard on lohi event, default hilo"},
   {parameter: "-n, --nodiscover", description: "do not check if there is allread on service running"},
   {parameter: "-b, --boards [boards]", description: "the number of boards to be used"},
@@ -12,7 +19,7 @@ params = [
   {parameter: "-t, --global_timeout [global_timeout]", description: "global timeout for close a box, defaults to 1000ms"},
 ]
 
-for i in [1..12]
+for i in [1..4]
   params.push {parameter: "-p"+i+", --boardPin"+i+" [boardPin"+i+"]", description: "pin number of boards #"+i+""}
   params.push {parameter: "-o"+i+", --optoPin"+i+" [optoPin"+i+"]", description: "pin number of optical switch #"+i+""}
   params.push {parameter: "-d"+i+", --delay"+i+" [delay"+i+"]", description: "delay for opening the board #"+i+""}
@@ -38,11 +45,18 @@ class ClientCMD extends Command
       debug 'options.magellan', '*'
       @client.useSTDIN=false
 
+    if options.pifacedigital
+      tag     = 'K-1'
+      if options.motor
+        @client.setUpPIFace tag,gd,gt,options.board,options.opto,closeOnHiLO,options.motor
+      else
+        @client.setUpPIFace tag,gd,gt,options.board,options.opto,closeOnHiLO
+      @client.start()
 
-    if options.boards
+    else if options.boards
       boards = parseInt options.boards
-      if boards > 12
-        boards=12
+      if boards > 4
+        boards=4
       closeOnHiLO = true
       if options.lohi
         closeOnHiLO = false

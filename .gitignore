@@ -7,3 +7,5 @@ test/files/*.png
 *.DS_Store
 *.old
 setup.sh
+npm-debug.log
+debug.log
