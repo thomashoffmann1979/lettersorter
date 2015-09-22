@@ -25,11 +25,14 @@ class Clapperboard extends EventEmitter
     console.log 'PIN ON', @pin, @openindex
     @open()
   setTimeout: () ->
-    @timer = setTimeout @close.bind(@) ,@timeout
+    @timer = setTimeout @onTimeOut.bind(@) ,@timeout
   clear: () ->
     if @timer?
       clearTimeout @timer
       @timer = null
+  onTimeOut: () ->
+    @openindex = 0
+    @close()
   close: () ->
     #if @active==true
     @openindex--
