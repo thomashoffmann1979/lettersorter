@@ -4,10 +4,13 @@
   "homepage": "https://github.com/tualo/lettersorter",
   "main": "lib/main.js",
   "bin": {
-    "sorter": "./bin/sorter"
+    "sorter": "./bin/sorter",
+    "sorter-client": "./bin/sorter-client",
+    "sorter-dispatcher": "./bin/sorter-dispatcher",
+    "sorter-install": "./bin/sorter-install"
   },
   "license": "GPL-3.0",
-  "version": "0.1.3",
+  "version": "0.1.6",
   "engines": {
     "node": ">=0.12.0"
   },

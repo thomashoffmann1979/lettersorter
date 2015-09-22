@@ -108,9 +108,15 @@ class Dispatcher extends EventEmitter
 
   onERPError: (socket,data) ->
     error 'dispatcher erp error', data
+    
   onLoginSuccess: (socket,data) ->
     debug 'login', data
     @sendERP 'sendings', {}
+    @timer = setInterval @loopSendings.bind(@), 60000
+
+  loopSendings: () ->
+    @sendERP 'sendings', {}
+
   onLoginError: (socket,data) ->
     error 'login error', data
   onSendings: (list) ->

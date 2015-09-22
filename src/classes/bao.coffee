@@ -15,12 +15,14 @@ class BAO extends EventEmitter
     @closeOnHiLO = closeOnHiLO
   setUp: () ->
     me = @
+    console.log 'new Clapperboard', me.boardPin, me.timeout
     me.board = new Clapperboard me.boardPin, me.timeout
     me.board.on 'open', () ->
       me.emit 'open'
     me.board.on 'close', () ->
       me.emit 'close'
     me.board.setUp()
+    
     if typeof me.optoPin != 'undefined'
       me.opto = new PIN me.optoPin
       me.opto.on 'started', () ->

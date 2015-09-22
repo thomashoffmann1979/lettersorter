@@ -9,6 +9,10 @@ class Clapperboard extends EventEmitter
     @active = false
     @timer = null
     @openindex = 0
+    #setInterval @state.bind(this), 1000
+  state: () ->
+    debug 'clapperboard', 'PIN '+@pin+' INDEX'+@openindex+' '
+
   setUp: () ->
     @board = new PIN @pin
     @board.on 'started', () => @onBoardStarted()
@@ -18,6 +22,7 @@ class Clapperboard extends EventEmitter
     @board.out()
   onBoardSetOut: () ->
     @active = true
+    console.log 'PIN ON', @pin, @openindex
     @open()
   setTimeout: () ->
     @timer = setTimeout @close.bind(@) ,@timeout
@@ -26,14 +31,14 @@ class Clapperboard extends EventEmitter
       clearTimeout @timer
       @timer = null
   close: () ->
-    if @active==true
-      @openindex--
-      if @openindex<0
-        @openindex=0
-      if @openindex == 0
-        @board.set false
-        debug 'clapperboard','close'
-        @emit 'close', true
+    #if @active==true
+    @openindex--
+    if @openindex < 0
+      @openindex = 0
+    if @openindex == 0
+      @board.set false
+      debug 'clapperboard','close'
+      @emit 'close', true
   open: () ->
     if @active==true
       @openindex++
