@@ -55,7 +55,11 @@ class PIN extends EventEmitter
       @canUseGPIO = true
       fs.exists @currentPath, (exists) => @onCurrentGPIOExists(exists)
     else
-      @emit 'error', new Error 'No access to GPIO'
+      if process.env.ingoreGPIO and process.env.ingoreGPIO=='1'
+        @canUseGPIO=false
+        @ready()
+      else
+        @emit 'error', new Error 'No access to GPIO'
   onCurrentGPIOExists: (exists) ->
     if exists
       @ready()

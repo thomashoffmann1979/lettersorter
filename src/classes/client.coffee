@@ -238,6 +238,7 @@ class Client extends EventEmitter
         debug 'client got list', list.length
       else
         list = [msg.data]
+      debug 'client adding ids', list.length
       (@addID(msg.tag,id) for id in list)
     true
   sendIO: (tag,data) ->

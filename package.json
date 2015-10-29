@@ -10,7 +10,7 @@
     "sorter-install": "./bin/sorter-install"
   },
   "license": "GPL-3.0",
-  "version": "0.1.7",
+  "version": "0.9.1",
   "engines": {
     "node": ">=0.12.0"
   },

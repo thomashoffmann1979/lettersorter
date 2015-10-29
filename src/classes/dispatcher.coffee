@@ -108,13 +108,14 @@ class Dispatcher extends EventEmitter
 
   onERPError: (socket,data) ->
     error 'dispatcher erp error', data
-    
+
   onLoginSuccess: (socket,data) ->
     debug 'login', data
     @sendERP 'sendings', {}
     @timer = setInterval @loopSendings.bind(@), 60000
 
   loopSendings: () ->
+    debug 'loopSendings', 'at timestamp '+(new Date().getTime())
     @sendERP 'sendings', {}
 
   onLoginError: (socket,data) ->
@@ -208,6 +209,15 @@ class Dispatcher extends EventEmitter
     else
       debug 'add sending container', 'allready there'
 
-    if typeof @box_containers[container] == 'string'
-      if typeof @box_clients[@box_containers[container]] == 'object'
-        @box_clients[@box_containers[container]].emit 'add id', id
+    try
+      if typeof @box_containers[container] == 'object' && typeof @box_containers[container].id == 'string'
+        if typeof @box_clients[@box_containers[container].id] == 'object'
+          for index in [0..codes.length]
+            msg =
+              tag: @box_containers[container].tag
+              data: codes[index]
+
+            @box_clients[@box_containers[container].id].emit 'add id', msg
+            info 'box_clients','send id '+codes.join(',')+' *'+container+'*'
+    catch e
+      error 'dispatcher*',e
